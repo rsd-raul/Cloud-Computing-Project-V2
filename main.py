@@ -16,22 +16,28 @@ class FileUploadFormHandler(webapp2.RequestHandler):
     def get(self):
         files = FileModel.query()
 
-        self.response.write('<h1>My GuestBook</h1><ol>')
+        self.response.write('<h1>Object in the Datastore</h1>'
+                            '<ol>')
+
+        self.response.write('''
+        <h2>Select one to download</h2>
+        <form action="download_file/">
+        ''')
         for aux_file in files:
-            self.response.write('<li> \t %s' % aux_file.title)
             self.response.write('''
-                <form action="/download_file/{0}" method=get>
-                <input type=submit value="Download">
-                </form>
-            '''.format(aux_file.blob_key))
-        self.response.write('</ol>')
+                <input type="checkbox" name="id" value={0}> {1} - {2}<br>
+            '''.format(aux_file.blob_key, aux_file.title, aux_file.date))
+
+        self.response.write('''<br><input type="submit" value="Submit"></form>''')
 
         upload_url = blobstore.create_upload_url('/upload_file')
 
+        self.response.out.write("""<h2>Upload a file instead:</h2>""")
         self.response.out.write("""
             <html><body>
             <form action="{0}" method="POST" enctype="multipart/form-data">
-              Upload File: <input type="file" name="file"><br>
+              Upload File: <input type="file" name="file">
+              <br><br>
               <input type="submit" name="submit" value="Submit">
             </form>
             </body></html>
@@ -51,17 +57,19 @@ class FileUploadHandler(blobstore_handlers.BlobstoreUploadHandler):
             self.redirect('/')
 
         except:
-            print "este"
             self.error(500)
 
 
 class DownloadFile(blobstore_handlers.BlobstoreDownloadHandler):
-    def get(self, photo_key):
+    def get(self, file_key):
 
-        if not blobstore.get(photo_key):
+        # Retrieve the file key by asking for the id parameter we set in the form
+        file_key = self.request.get("id")
+
+        if not blobstore.get(file_key):
             self.error(404)
         else:
-            self.send_blob(photo_key)
+            self.send_blob(file_key)
 
 
 APP = webapp2.WSGIApplication([
@@ -69,56 +77,3 @@ APP = webapp2.WSGIApplication([
     ('/upload_file', FileUploadHandler),
     ('/download_file/(.*)', DownloadFile),
 ], debug=True)
-
-#
-# import webapp2
-# from google.appengine.ext import db
-# from google.appengine.ext import blobstore
-#
-#
-# class Greeting(db.Model):
-#     content = db.StringProperty(multiline=True)
-#     date = db.DateTimeProperty(auto_now_add=True)
-#
-#
-# class MainHandler(webapp2.RequestHandler):
-#
-#     def get(self):  # pylint:disable-msg=invalid-name
-#         self.response.write('Hello world!')
-#         self.response.write('<h1>My GuestBook</h1><ol>')
-#
-#         # greetings = db.GqlQuery("SELECT * FROM Greeting")
-#         greetings = Greeting.all()
-#
-#         for greeting in greetings:
-#             self.response.write('<li> %s' % greeting.content)
-#         self.response.write('''
-#             </ol><hr>
-#             <form action="/sign" method=post>
-#             <textarea name=content rows=3 cols=60></textarea>
-#             <br><input type=submit value="Sign Guestbook">
-#             </form>
-#         ''')
-#
-#         upload_url = blobstore.create_upload_url('/upload_photo')
-#         self.response.out.write("""
-#         <html><body>
-#         <form action="{0}" method="POST" enctype="multipart/form-data">
-#           Upload File: <input type="file" name="file"><br>
-#           <input type="submit" name="submit" value="Submit">
-#         </form>
-#         </body></html>""".format(upload_url))
-#
-#
-# class GuestBook(webapp2.RequestHandler):
-#     def post(self):
-#         greeting = Greeting()
-#         greeting.content = self.request.get('content')
-#         greeting.put()
-#         self.redirect('/')
-#
-# APP = webapp2.WSGIApplication([
-#     ('/', MainHandler),
-#     ('/sign', GuestBook),
-# ], debug=True)
-
