@@ -1,6 +1,34 @@
 h2 {
-    color: blue;
+    font-family: verdana,arial;
+    font-size: 1.3em;
+    font-weight: bold;
+    color: #333366;
+    margin-bottom: 1.2em;
 }
+
 h1 {
-    color: red;
+    font-family: verdana,arial;
+    font-size: 2em;
+    font-weight: bold;
+    color: #333366;
+    margin-bottom: 1.2em;
+}
+
+html {
+  position: relative;
+  min-height: 100%;
+}
+body {
+  background-color: #E9EEF6;
+  margin-bottom: 60px;
+}
+
+main {
+	margin: auto;
+	margin-top: 40px;
+    width: 40%;
+}
+
+form {
+	font-weight: bold;
 }

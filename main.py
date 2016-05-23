@@ -16,25 +16,24 @@ class FileModel(ndb.Model):
 
 class FileUploadFormHandler(webapp2.RequestHandler):
     def get(self):
-        files = FileModel.query()
 
+        # Here we  start building our WebPage, we establish the Title, the CSS that will be applied and a header
         self.response.write('''
             <html>
                 <meta charset="UTF-8">
                 <head>
                     <title>Objects in the DataStore</title>
                     <link rel="stylesheet" type="text/css" href="styles\style.css">
-                    <style type="text/css">
-                    h2 { color: blue; }
-                    </style>
                 </head>
                 <body>
                     <main>
                         <h1>Objects in the DataStore</h1>
                             ''')
 
+        # We iterate over each of the files in the Datastore
         exists = False
-        for aux_file in files:
+        for aux_file in FileModel.query():
+            # If there isn't a previous file, write the header of the form
             if not exists:
                 self.response.write('''
                         <h2>Select one to download</h2>
@@ -42,10 +41,12 @@ class FileUploadFormHandler(webapp2.RequestHandler):
                                     ''')
                 exists = True
 
+            # For each file, populate the fields with the properties of the file
             self.response.write('''
                             <input type="checkbox" name="id" value={0}> {1} -- {2}<br>
                                 '''.format(aux_file.blob_key, aux_file.title, aux_file.date))
 
+        # If the form was initialized, close it and create a Download button.
         if exists:
             self.response.write('''
                             <br>
@@ -53,12 +54,13 @@ class FileUploadFormHandler(webapp2.RequestHandler):
                         </form>
                                 ''')
 
+        # We create a url for uploading the file, that will receive the info and perform the required operation
         upload_url = blobstore.create_upload_url('/upload_file')
 
+        # Then we define the form, bearing in mind the form must be enctype="multipart/form-data" for Blobstore
         self.response.out.write('''
                         <h2>Upload a file:</h2>
 
-                        <!-- The form must be enctype="multipart/form-data" for Blobstore.-->
                         <form action="{0}" method="POST" enctype="multipart/form-data">
                             Upload File: <input type="file" name="file">
                             <br><br>
@@ -88,6 +90,7 @@ class FileUploadHandler(blobstore_handlers.BlobstoreUploadHandler):
             sleep(1)
             self.redirect('/')
 
+        # If any exception arises, redirect to a 500 page
         except:
             self.error(500)
 
@@ -105,7 +108,7 @@ class DownloadFile(blobstore_handlers.BlobstoreDownloadHandler):
         else:
             self.send_blob(file_key)
 
-
+# Here we specify all the routes our app will manage and what class is tasked with the responsibility of handling them
 APP = webapp2.WSGIApplication([
     ('/', FileUploadFormHandler),
     ('/upload_file', FileUploadHandler),
