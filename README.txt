@@ -2,7 +2,7 @@
 
 Description:
 
-    This project objective is to design a simple application or service using Google App Engine and it's Datastore
+    This project objective is to design a simple application or service using Google App Engine and its Datastore
     system, in this case implemented with the recommended Blobstore service.
     Another important feature is to construct the website dynamically using only Python and GAE, and not only that
     but also referencing static files such as CSS ones to directly apply styling to the webpage.
